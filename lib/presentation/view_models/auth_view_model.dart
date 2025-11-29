@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,7 +33,6 @@ class AuthViewModel extends BaseViewModel {
     required LoginUseCase loginUseCase,
     required LogoutUseCase logoutUseCase,
     required AuthRepository authRepository,
-
   }) : _loginUseCase = loginUseCase,
 
        _logoutUseCase = logoutUseCase,
@@ -178,7 +176,8 @@ class AuthViewModel extends BaseViewModel {
           await _createUserProfile(result.user!);
         }
 
-        if (profile == null || profile['role'] != 'admin') {
+        if (profile == null ||
+            profile['role'] != 'admin' && profile['role'] != 'user') {
           _currentUser = result.user;
           await _saveLoginState(true);
           _setLoading(false);
@@ -186,7 +185,7 @@ class AuthViewModel extends BaseViewModel {
         } else {
           await logout();
           _setLoading(false);
-          _setError("Admin vui lòng đăng nhập ở trang quản trị.");
+          _setError("Chỉ nhân viên (Staff) mới được phép truy cập chức năng này.");
           return false;
         }
       } else {
@@ -200,8 +199,6 @@ class AuthViewModel extends BaseViewModel {
       return false;
     }
   }
-
-
 
   Future<void> logout() async {
     try {
@@ -221,12 +218,6 @@ class AuthViewModel extends BaseViewModel {
     final user = Supabase.instance.client.auth.currentUser;
     return user?.email ?? 'Không tìm thấy email';
   }
-
-
-
-
-
-
 
   void _setLoading(bool loading) {
     _isLoading = loading;
@@ -322,6 +313,7 @@ class AuthViewModel extends BaseViewModel {
       print('❌ Error upserting profile: $e');
     }
   }
+
   Future<void> refreshUserProfile() async {
     await _fetchUserProfile();
     if (_userProfile != null) {
