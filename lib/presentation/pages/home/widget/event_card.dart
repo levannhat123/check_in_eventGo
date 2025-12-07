@@ -7,6 +7,7 @@ class EventCard extends StatelessWidget {
   final String date;
   final String rating;
   final bool isHightlight;
+  final VoidCallback? onTap;
 
   const EventCard({
     Key? key,
@@ -15,6 +16,7 @@ class EventCard extends StatelessWidget {
     required this.date,
     required this.rating,
     this.isHightlight = false,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -29,7 +31,6 @@ class EventCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ảnh Poster
           Container(
             width: 80,
             height: 110,
@@ -42,13 +43,10 @@ class EventCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-
-          // Nội dung bên phải
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Tên sự kiện
                 Text(
                   title,
                   style: const TextStyle(
@@ -61,12 +59,13 @@ class EventCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
-
-                // Ngày tháng
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_outlined,
-                        color: Colors.white.withOpacity(0.6), size: 14),
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      color: Colors.white.withOpacity(0.6),
+                      size: 14,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       date,
@@ -78,21 +77,24 @@ class EventCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // Hàng nút bấm
                 Row(
                   children: [
-                    // Nút Rating (Xám)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A344B),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.bar_chart_rounded,
-                              color: Colors.white.withOpacity(0.6), size: 16),
+                          Icon(
+                            Icons.bar_chart_rounded,
+                            color: Colors.white.withOpacity(0.6),
+                            size: 16,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             rating,
@@ -106,14 +108,18 @@ class EventCard extends StatelessWidget {
                       ),
                     ),
 
-                    const Spacer(), // Đẩy nút Quét vé sang phải
-
-                    // Nút Quét Vé (Xanh Cyan)
+                    const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF00E5C0), Color(0xFF00B0A5)], // Gradient nhẹ
+                          colors: [
+                            Color(0xFF00E5C0),
+                            Color(0xFF00B0A5),
+                          ], // Gradient nhẹ
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -126,23 +132,30 @@ class EventCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.qr_code_scanner, color: Colors.white, size: 16),
+                          Icon(
+                            Icons.qr_code_scanner,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                           SizedBox(width: 6),
-                          Text(
-                            'Quét vé',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                          InkWell(
+                            onTap: onTap,
+                            child: Text(
+                              'Quét vé',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../presentation/pages/auth/login_screen.dart';
+import '../presentation/pages/home/check_in_scanner_screen.dart';
 import '../presentation/view_models/auth_change_notifier.dart';
 
 class AppRouter {
@@ -24,6 +25,14 @@ class AppRouter {
             path: RouterPath.home,
             builder: (context, state) => HomeScreen(),
           ),
+          GoRoute(
+            path: RouterPath.check_in,
+            builder: (context, state) {
+              final eventId = state.extra as String;   // nhận từ extra
+              return CheckInScannerScreen(eventId: eventId);
+            },
+          ),
+
         ],
         redirect: (context, state) async {},
         refreshListenable: authNotifier,

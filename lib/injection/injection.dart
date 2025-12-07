@@ -1,4 +1,4 @@
-
+import 'package:check_in_qr/presentation/view_models/home_view_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,10 +18,11 @@ void setupDependencies(GoRouter router) {
   getIt.registerLazySingleton(() => LoginUseCase(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt<AuthRepository>()));
   getIt.registerFactory(
-        () => AuthViewModel(
+    () => AuthViewModel(
       loginUseCase: getIt<LoginUseCase>(),
       logoutUseCase: getIt<LogoutUseCase>(),
       authRepository: getIt<AuthRepository>(),
     ),
   );
+  getIt.registerFactory(() => HomeViewModel());
 }

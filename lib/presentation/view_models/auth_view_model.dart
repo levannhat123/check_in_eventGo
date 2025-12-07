@@ -185,7 +185,9 @@ class AuthViewModel extends BaseViewModel {
         } else {
           await logout();
           _setLoading(false);
-          _setError("Chỉ nhân viên (Staff) mới được phép truy cập chức năng này.");
+          _setError(
+            "Chỉ nhân viên (Staff) mới được phép truy cập chức năng này.",
+          );
           return false;
         }
       } else {
