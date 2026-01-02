@@ -22,6 +22,8 @@ class HomeViewModel extends BaseViewModel {
           return "LỖI: Vé không hợp lệ hoặc không tồn tại.";
         }
 
+
+
         final data = ticketDoc.data();
         if (data == null) {
           return "LỖI: Không thể đọc dữ liệu vé.";
@@ -32,6 +34,22 @@ class HomeViewModel extends BaseViewModel {
         if (data['paymentStatus'] != 'completed') {
           return "LỖI: Vé này chưa hoàn tất thanh toán.";
         }
+        // 🔒 CHƯA TỚI GIỜ HOẶC ĐÃ KẾT THÚC
+        final Timestamp? startTs = data['startTime'];
+        final Timestamp? endTs = data['endTime'];
+
+        if (startTs != null && endTs != null) {
+          final now = DateTime.now();
+
+          if (now.isBefore(startTs.toDate())) {
+            return "Sự kiện chưa bắt đầu.";
+          }
+
+          if (now.isAfter(endTs.toDate())) {
+            return "Sự kiện đã kết thúc.";
+          }
+        }
+
         final checkinStatus = data['checkinStatus'];
         if (checkinStatus == 'completed') {
           final timestamp = data['checkinTimestamp'] as Timestamp?;

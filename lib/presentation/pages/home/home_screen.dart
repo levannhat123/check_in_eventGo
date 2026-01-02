@@ -3,6 +3,8 @@ import 'package:check_in_qr/presentation/pages/home/widget/summary_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
 import '../../../data/models/event_detail_model.dart';
 import '../../../routers/router_name.dart';
 
@@ -26,9 +28,63 @@ class HomeScreen extends StatelessWidget {
     return total;
   }
 
+  bool isEventDisplayable(EventDetailModel event) {
+    if (event.endTime == null) return false;
+    final now = DateTime.now();
+    return now.isBefore(event.endTime!);
+  }
+
+  bool canCheckIn(EventDetailModel event) {
+    if (event.startTime == null || event.endTime == null) return false;
+    final now = DateTime.now();
+    return now.isAfter(event.startTime!) && now.isBefore(event.endTime!);
+  }
+
+  Widget _buildEventStatusTag(EventDetailModel event) {
+    if (event.startTime == null || event.endTime == null)
+      return const SizedBox();
+
+    final now = DateTime.now();
+    String text;
+    Color color;
+    Color bgColor;
+
+    if (now.isBefore(event.startTime!)) {
+      text = "Sắp diễn ra";
+      color = Colors.orange;
+      bgColor = Colors.orange.withOpacity(0.1);
+    } else if (now.isAfter(event.endTime!)) {
+      text = "Đã kết thúc";
+      color = Colors.grey;
+      bgColor = Colors.grey.withOpacity(0.1);
+    } else {
+      text = "Đang diễn ra";
+      color = Colors.green;
+      bgColor = Colors.green.withOpacity(0.1);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0B1221),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0B1221),
         elevation: 0,
@@ -41,6 +97,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('events').snapshots(),
         builder: (context, eventSnapshot) {
@@ -62,83 +119,162 @@ class HomeScreen extends StatelessWidget {
               if (orderSnapshot.hasError) {
                 return Center(child: Text('Lỗi Order: ${orderSnapshot.error}'));
               }
-
               final orderDocs = orderSnapshot.data?.docs ?? [];
-
-              int globalSold = 0;
-              for (var doc in orderDocs) {
-                final data = doc.data() as Map<String, dynamic>;
-                final List tickets = data['tickets'] ?? [];
-                for (var t in tickets) {
-                  globalSold += parseQuantity(t['quantity']);
-                }
-              }
-
-              int globalTotal = 0;
-              List<Map<String, dynamic>> eventListDisplay = [];
-
-              for (var doc in eventDocs) {
-                final data = doc.data() as Map<String, dynamic>;
-                data['id'] = doc.id;
-                final event = EventDetailModel.fromJson(data);
-
-                final eventTotal = _calculateEventTotalTickets(event);
-                globalTotal += eventTotal;
-
-                int eventSold = 0;
-                final relevantOrders = orderDocs.where((orderDoc) {
-                  final orderData = orderDoc.data() as Map<String, dynamic>;
-                  return orderData['eventId'] == event.id;
-                });
-
-                for (var orderDoc in relevantOrders) {
-                  final orderData = orderDoc.data() as Map<String, dynamic>;
-                  final List tickets = orderData['tickets'] ?? [];
-                  for (var t in tickets) {
-                    eventSold += parseQuantity(t['quantity']);
+              return StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('tickets')
+                    .snapshots(),
+                builder: (context, ticketSnapshot) {
+                  if (ticketSnapshot.hasError) {
+                    return Center(
+                      child: Text('Lỗi Ticket: ${ticketSnapshot.error}'),
+                    );
                   }
-                }
 
-                eventListDisplay.add({
-                  'event': event,
-                  'sold': eventSold,
-                  'total': eventTotal,
-                });
-              }
+                  final ticketDocs = ticketSnapshot.data?.docs ?? [];
+                  final Set<String> activeEventIds = {};
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    SummaryCard(
-                      soldTickets: globalSold,
-                      totalTickets: globalTotal,
-                    ),
+                  for (var doc in eventDocs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    data['id'] = doc.id;
+                    final event = EventDetailModel.fromJson(data);
+                    if (isEventDisplayable(event)) {
+                      activeEventIds.add(event.id);
+                    }
+                  }
 
-                    const SizedBox(height: 24),
+                  int globalSold = 0;
+                  for (var doc in orderDocs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    if (!activeEventIds.contains(data['eventId'])) continue;
+                    final List tickets = data['tickets'] ?? [];
+                    for (var t in tickets) {
+                      globalSold += parseQuantity(t['quantity']);
+                    }
+                  }
 
-                    ...eventListDisplay.map((item) {
-                      final event = item['event'] as EventDetailModel;
-                      final sold = item['sold'] as int;
-                      final total = item['total'] as int;
+                  int globalTotal = 0;
+                  List<Map<String, dynamic>> eventListDisplay = [];
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: EventCard(
-                          imageUrl: event.bannerURL ?? "",
-                          title: event.title,
-                          date: event.startTime != null
-                              ? "${event.startTime!.day}.${event.startTime!.month}.${event.startTime!.year}"
-                              : "Chưa có ngày",
-                          rating: "$sold/$total",
-                          onTap: () {
-                            context.push(RouterPath.check_in, extra: event.id);
-                          },
+                  for (var doc in eventDocs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    data['id'] = doc.id;
+
+                    final event = EventDetailModel.fromJson(data);
+                    if (!isEventDisplayable(event)) continue;
+
+                    final eventTotal = _calculateEventTotalTickets(event);
+                    globalTotal += eventTotal;
+
+                    int eventSold = 0;
+                    final relevantOrders = orderDocs.where((orderDoc) {
+                      final orderData = orderDoc.data() as Map<String, dynamic>;
+                      return orderData['eventId'] == event.id;
+                    });
+
+                    for (var orderDoc in relevantOrders) {
+                      final orderData = orderDoc.data() as Map<String, dynamic>;
+                      final List tickets = orderData['tickets'] ?? [];
+                      for (var t in tickets) {
+                        eventSold += parseQuantity(t['quantity']);
+                      }
+                    }
+
+                    int eventCheckedIn = 0;
+                    for (var ticketDoc in ticketDocs) {
+                      final ticketData =
+                          ticketDoc.data() as Map<String, dynamic>;
+                      if (ticketData['eventId'] == event.id) {
+                        eventCheckedIn += parseQuantity(
+                          ticketData['checkedIn'],
+                        );
+                      }
+                    }
+
+                    final displaySold = (eventSold - eventCheckedIn).clamp(
+                      0,
+                      eventSold,
+                    );
+
+                    eventListDisplay.add({
+                      'event': event,
+                      'sold': displaySold,
+                      'total': eventTotal,
+                      'checkedIn': eventCheckedIn,
+                      'realSold': eventSold,
+                    });
+                  }
+
+                  eventListDisplay.sort((a, b) {
+                    final eventA = a['event'] as EventDetailModel;
+                    final eventB = b['event'] as EventDetailModel;
+
+                    final bool isHappeningA = canCheckIn(eventA);
+                    final bool isHappeningB = canCheckIn(eventB);
+                    if (isHappeningA && !isHappeningB) return -1;
+                    if (!isHappeningA && isHappeningB) return 1;
+                    if (eventA.startTime != null && eventB.startTime != null) {
+                      return eventA.startTime!.compareTo(eventB.startTime!);
+                    }
+                    return 0;
+                  });
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        SummaryCard(
+                          soldTickets: globalSold,
+                          totalTickets: globalTotal,
                         ),
-                      );
-                    }).toList(),
-                  ],
-                ),
+
+                        const SizedBox(height: 24),
+
+                        ...eventListDisplay.map((item) {
+                          final event = item['event'] as EventDetailModel;
+                          final checkedIn = item['checkedIn'] as int;
+                          final realSold = item['realSold'] as int;
+                          final bool isTimeValid = canCheckIn(event);
+                          final bool isNotFull = realSold > 0 && checkedIn < realSold;
+                          final bool isEnabled = isTimeValid && isNotFull;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: EventCard(
+                              isEnabled: isEnabled,
+                              imageUrl: event.bannerURL ?? "",
+                              title: event.title,
+                              statusTag: _buildEventStatusTag(event),
+                              date: event.startTime != null
+                                  ? DateFormat(
+                                      'dd/MM/yyyy HH:mm',
+                                    ).format(event.startTime!)
+                                  : "Chưa có ngày",
+                              rating: "$checkedIn/$realSold",
+
+                              onTap: () {
+                                if (!canCheckIn(event)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Sự kiện chưa diễn ra",
+                                      ),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                context.push(
+                                  RouterPath.check_in,
+                                  extra: event.id,
+                                );
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  );
+                },
               );
             },
           );
@@ -146,4 +282,48 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget buildEventStatusTag(EventDetailModel event) {
+  String statusEN = event.status ?? '';
+  String textVN = "";
+  Color color = Colors.grey;
+  switch (statusEN.toUpperCase()) {
+    case 'ACTIVE':
+      textVN = "Đang diễn ra";
+      color = const Color(0xFF00E5C0);
+      break;
+
+    case 'INACTIVE':
+      textVN = "Sắp diễn ra";
+      color = const Color(0xFFF59E0B);
+      break;
+
+    case 'COMPLETED':
+      textVN = "Đã kết thúc";
+      color = const Color(0xFFEF4444);
+      break;
+
+    case 'CANCELLED':
+      textVN = "Đã hủy";
+      color = Colors.red;
+      break;
+
+    default:
+      final now = DateTime.now();
+      if (event.startTime != null && now.isBefore(event.startTime!)) {
+        textVN = "Sắp diễn ra";
+        color = Colors.orange;
+      } else if (event.endTime != null && now.isAfter(event.endTime!)) {
+        textVN = "Đã kết thúc";
+        color = Colors.grey;
+      } else {
+        textVN = statusEN;
+        color = Colors.white;
+      }
+  }
+  return Text(
+    textVN.toUpperCase(),
+    style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+  );
 }
