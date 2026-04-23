@@ -83,8 +83,11 @@ lib/
    - File `lib/firebase_options.dart` đã tồn tại.
    - Nếu đổi project Firebase, chạy lại FlutterFire CLI để regenerate file này.
 
-2. **Supabase**
-   - Cập nhật `url` và `anonKey` trong `lib/core/config/supabase_config.dart`.
+2. **Supabase (.env với flutter_dotenv)**
+   - Không lưu key trực tiếp trong source code.
+   - Tạo file `.env` từ `.env.example`:
+     - `SUPABASE_URL`
+     - `SUPABASE_ANON_KEY`
 
 3. **Firestore/Supabase schema**
    - Bảo đảm các collection/table và field đúng theo constants trong `lib/core/constants/app_storage_key.dart`.
@@ -92,6 +95,9 @@ lib/
 ## Cài đặt & chạy local
 
 ```bash
+cp .env.example .env
+# cập nhật giá trị thật trong file .env
+
 flutter pub get
 flutter analyze
 flutter test

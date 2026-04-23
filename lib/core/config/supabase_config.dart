@@ -1,5 +1,14 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class SupabaseConfig {
-  static const String url = 'https://lgcpasapwtnbdndvqfbo.supabase.co';
-  static const String anonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnY3Bhc2Fwd3RuYmRuZHZxZmJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTQwMTksImV4cCI6MjA5MjA5MDAxOX0.zlqUFKE3AV4ipDItrMKUIUlCvUpAi_hTSPAVNmbkDSg';
+  static String get url => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get anonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+  static void validate() {
+    if (url.isEmpty || anonKey.isEmpty) {
+      throw StateError(
+        'Missing Supabase config. Provide --dart-define=SUPABASE_URL and --dart-define=SUPABASE_ANON_KEY.',
+      );
+    }
+  }
 }
