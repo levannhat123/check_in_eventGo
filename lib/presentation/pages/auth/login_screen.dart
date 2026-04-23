@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -46,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Positioned.fill(
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Color(0xFF4257b4),
+                    color: AppColors.brandPrimary,
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(AppSizes.size40),
                       bottomRight: Radius.circular(AppSizes.size40),
@@ -56,12 +54,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.only(top: AppSpacing.space60),
                     child: Column(
                       children: [
-                        CircleAvatar(backgroundImage: AssetImage(AppImage.logo), radius: AppSizes.size40),
+                        CircleAvatar(
+                          backgroundImage: AssetImage(AppImage.logo),
+                          radius: AppSizes.size40,
+                        ),
                         const SizedBox(height: AppSpacing.space10),
                         Text(
                           AppStrings.loginTitle,
                           style: TextStyle(
-                            color: Color(0xFFf49415),
+                            color: AppColors.brandAccent,
                             fontSize: AppSizes.size24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -69,7 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: AppSpacing.space10),
                         Text(
                           AppStrings.loginDescription,
-                          style: TextStyle(color: Color(0xFFf49415), fontSize: 12),
+                          style: TextStyle(
+                            color: AppColors.brandAccent,
+                            fontSize: AppSizes.size12,
+                          ),
                           textAlign: TextAlign.justify,
                         ),
                       ],
@@ -109,10 +113,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               AppSvg.close,
                               width: AppSizes.size24,
                               height: AppSizes.size24,
-                              color: Colors.grey,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.grey,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
-                          focusedBorderColor: const Color(0xFF4257b4),
+                          focusedBorderColor: AppColors.brandPrimary,
                           enabledBorderColor: Colors.grey.shade300,
                           prefixIcon: const Icon(Icons.email),
                           shadowColor: AppColors.transparent,
@@ -124,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderColor: Colors.grey.shade300,
                           validator: Validator.password,
                           fillColor: Colors.grey.shade100,
-                          focusedBorderColor: const Color(0xFF4257b4),
+                          focusedBorderColor: AppColors.brandPrimary,
                           enabledBorderColor: Colors.grey.shade300,
                           shadowColor: AppColors.transparent,
                         ),
@@ -137,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: const Text(
                                 AppStrings.forgotPasswordButton,
-                                style: TextStyle(color: Color(0xFFf49415)),
+                                style: TextStyle(color: AppColors.brandAccent),
                               ),
                             ),
                           ],
@@ -145,60 +152,66 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: AppSpacing.space20),
                         viewModel.isLoading
                             ? Center(
-                          child: LoadingAnimationWidget.hexagonDots(
-                            color:Color(0xFFf49415),
-                            size: AppSizes.size50,
-                          ),
-                        )
+                                child: LoadingAnimationWidget.hexagonDots(
+                                  color: AppColors.brandAccent,
+                                  size: AppSizes.size50,
+                                ),
+                              )
                             : AppElevatedButton(
-                          text: AppStrings.loginButton,
-                          borderColor: Color(0xFFf49415),
-                          color: Color(0xFFf49415),
-                          splashColor: AppColors.transparent,
-                          highlightColor: AppColors.white,
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              final success = await viewModel.login(
-                                emailController.text.trim(),
-                                passwordController.text,
-                              );
-                              if (success) {
-                                await showCustomDialog(
-                                  context: context,
-                                  title: AppStrings.loginSuccessTitle,
-                                  message: AppStrings.loginSuccessMessage,
-                                  buttonText: AppStrings.okayButton,
-                                  icon: Icons.check_circle,
-                                  iconColor: Colors.green,
-                                  onPressed: () {
-                                    context.go(RouterPath.home);
-                                  },
-                                );
-                              } else {
-                                await showCustomDialog(
-                                  context: context,
-                                  title: AppStrings.loginFailedTitle,
-                                  message:
-                                  viewModel.errorMessage ?? AppStrings.wrongEmailOrPasswordMessage,
-                                  buttonText: AppStrings.okayButton,
-                                  icon: Icons.error,
-                                  iconColor: Colors.red,
-                                  onPressed: () {},
-                                );
-                              }
-                            }
-                          },
-                        ),
+                                text: AppStrings.loginButton,
+                                borderColor: AppColors.brandAccent,
+                                color: AppColors.brandAccent,
+                                splashColor: AppColors.transparent,
+                                highlightColor: AppColors.white,
+                                onPressed: () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    final success = await viewModel.login(
+                                      emailController.text.trim(),
+                                      passwordController.text,
+                                    );
+                                    if (!context.mounted) return;
+                                    if (success) {
+                                      await showCustomDialog(
+                                        context: context,
+                                        title: AppStrings.loginSuccessTitle,
+                                        message: AppStrings.loginSuccessMessage,
+                                        buttonText: AppStrings.okayButton,
+                                        icon: Icons.check_circle,
+                                        iconColor: Colors.green,
+                                        onPressed: () {
+                                          context.go(RouterPath.home);
+                                        },
+                                      );
+                                    } else {
+                                      await showCustomDialog(
+                                        context: context,
+                                        title: AppStrings.loginFailedTitle,
+                                        message:
+                                            viewModel.errorMessage ??
+                                            AppStrings
+                                                .wrongEmailOrPasswordMessage,
+                                        buttonText: AppStrings.okayButton,
+                                        icon: Icons.error,
+                                        iconColor: Colors.red,
+                                        onPressed: () {},
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
                         const SizedBox(height: AppSpacing.space20),
                         RichText(
                           text: TextSpan(
                             text: AppStrings.noAccount,
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: AppSizes.size14,
+                            ),
                             children: [
                               TextSpan(
                                 text: AppStrings.signUpButton,
                                 style: TextStyle(
-                                  color: Color(0xFFf49415),
+                                  color: AppColors.brandAccent,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 recognizer: TapGestureRecognizer()

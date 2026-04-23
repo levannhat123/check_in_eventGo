@@ -19,10 +19,11 @@ class AppElevatedButton extends StatelessWidget {
     this.isDisable = false,
     Color? splashColor,
     Color? highlightColor,
-     this.width= double.infinity,
+    this.width = double.infinity,
   }) : borderRadius = borderRadius ?? BorderRadius.circular(10.0),
-       splashColor = splashColor ?? AppColors.yellow.withOpacity(0.8),
-       highlightColor = highlightColor ?? AppColors.green.withOpacity(0.8);
+       splashColor = splashColor ?? AppColors.yellow.withValues(alpha: 0.8),
+       highlightColor =
+           highlightColor ?? AppColors.green.withValues(alpha: 0.8);
 
   AppElevatedButton.outline({
     super.key,
@@ -42,8 +43,9 @@ class AppElevatedButton extends StatelessWidget {
     Color? highlightColor,
     this.width = double.infinity,
   }) : borderRadius = borderRadius ?? BorderRadius.circular(10.0),
-       splashColor = splashColor ?? AppColors.yellow.withOpacity(0.6),
-       highlightColor = highlightColor ?? AppColors.green.withOpacity(0.6);
+       splashColor = splashColor ?? AppColors.yellow.withValues(alpha: 0.6),
+       highlightColor =
+           highlightColor ?? AppColors.green.withValues(alpha: 0.6);
 
   AppElevatedButton.small({
     super.key,
@@ -63,8 +65,9 @@ class AppElevatedButton extends StatelessWidget {
     Color? highlightColor,
     this.width = double.infinity,
   }) : borderRadius = borderRadius ?? BorderRadius.circular(8.0),
-       splashColor = splashColor ?? AppColors.yellow.withOpacity(0.8),
-       highlightColor = highlightColor ?? AppColors.green.withOpacity(0.8);
+       splashColor = splashColor ?? AppColors.yellow.withValues(alpha: 0.8),
+       highlightColor =
+           highlightColor ?? AppColors.green.withValues(alpha: 0.8);
 
   AppElevatedButton.smallOutline({
     super.key,
@@ -84,8 +87,9 @@ class AppElevatedButton extends StatelessWidget {
     Color? highlightColor,
     this.width = double.infinity,
   }) : borderRadius = borderRadius ?? BorderRadius.circular(8.0),
-       splashColor = splashColor ?? AppColors.yellow.withOpacity(0.6),
-       highlightColor = highlightColor ?? AppColors.green.withOpacity(0.6);
+       splashColor = splashColor ?? AppColors.yellow.withValues(alpha: 0.6),
+       highlightColor =
+           highlightColor ?? AppColors.green.withValues(alpha: 0.6);
 
   final Function()? onPressed;
   final double height;
@@ -132,7 +136,10 @@ class AppElevatedButton extends StatelessWidget {
                   ? Center(
                       child: SizedBox.square(
                         dimension: height - 22.0,
-                        child: CircularProgressIndicator(color: textColor, strokeWidth: 2.2),
+                        child: CircularProgressIndicator(
+                          color: textColor,
+                          strokeWidth: 2.2,
+                        ),
                       ),
                     )
                   : Text(

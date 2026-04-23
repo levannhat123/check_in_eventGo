@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_strings.dart';
+
 class EventCard extends StatelessWidget {
   final String imageUrl;
   final String title;
@@ -11,7 +16,7 @@ class EventCard extends StatelessWidget {
   final bool isEnabled;
 
   const EventCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.date,
@@ -20,45 +25,45 @@ class EventCard extends StatelessWidget {
     this.onTap,
     this.statusTag,
     this.isEnabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.space16),
           decoration: BoxDecoration(
-            color: const Color(0xFF161D2F),
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(AppSizes.size5),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 80,
-                height: 110,
+                width: AppSizes.size80,
+                height: AppSizes.size110,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppSizes.size12),
                   image: DecorationImage(
                     image: NetworkImage(imageUrl),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.space16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 60.0),
+                      padding: const EdgeInsets.only(right: AppSpacing.space60),
                       child: Text(
                         title,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: AppSizes.size16,
                           fontWeight: FontWeight.bold,
                           height: 1.3,
                         ),
@@ -66,52 +71,54 @@ class EventCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.space8),
 
                     Row(
                       children: [
                         Icon(
                           Icons.calendar_today_outlined,
-                          color: Colors.white.withOpacity(0.6),
-                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.6),
+                          size: AppSizes.size14,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: AppSpacing.space6),
                         Text(
                           date,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: AppSizes.size13,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.space16),
 
                     Row(
                       children: [
                         // Rating Badge
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                            horizontal: AppSpacing.space12,
+                            vertical: AppSpacing.space8,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2A344B),
-                            borderRadius: BorderRadius.circular(20),
+                            color: AppColors.cardAccentBackground,
+                            borderRadius: BorderRadius.circular(
+                              AppSizes.size20,
+                            ),
                           ),
                           child: Row(
                             children: [
                               Icon(
                                 Icons.bar_chart_rounded,
-                                color: Colors.white.withOpacity(0.6),
-                                size: 16,
+                                color: Colors.white.withValues(alpha: 0.6),
+                                size: AppSizes.size16,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: AppSpacing.space4),
                               Text(
                                 rating,
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 12,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: AppSizes.size12,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -124,40 +131,45 @@ class EventCard extends StatelessWidget {
                         InkWell(
                           // 3. Nếu không enable thì onTap là null (không bấm được)
                           onTap: isEnabled ? onTap : null,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppSizes.size20),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
+                              horizontal: AppSpacing.space16,
+                              vertical: AppSpacing.space8,
                             ),
                             decoration: BoxDecoration(
                               // 4. Logic đổi màu Gradient
                               gradient: isEnabled
                                   ? const LinearGradient(
                                       colors: [
-                                        Color(0xFF00E5C0),
-                                        Color(0xFF00B0A5),
+                                        AppColors.checkInGradientStart,
+                                        AppColors.checkInGradientEnd,
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     )
                                   : const LinearGradient(
                                       colors: [
-                                        Color(0xFF4B5563), // Màu xám đậm
-                                        Color(0xFF374151),
+                                        AppColors.checkInDisabledStart,
+                                        AppColors.checkInDisabledEnd,
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(
+                                AppSizes.size20,
+                              ),
                               boxShadow: isEnabled
                                   ? [
                                       BoxShadow(
                                         color: const Color(
                                           0xFF00C4B4,
-                                        ).withOpacity(0.3),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                                        ).withValues(alpha: 0.3),
+                                        blurRadius: AppSizes.size8,
+                                        offset: const Offset(
+                                          AppSizes.size0,
+                                          AppSizes.size2,
+                                        ),
                                       ),
                                     ]
                                   : [], // Tắt bóng đổ nếu disable
@@ -172,16 +184,16 @@ class EventCard extends StatelessWidget {
                                   color: isEnabled
                                       ? Colors.white
                                       : Colors.white54,
-                                  size: 16,
+                                  size: AppSizes.size16,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: AppSpacing.space6),
                                 Text(
-                                  'Quét vé',
+                                  AppStrings.checkInButton,
                                   style: TextStyle(
                                     color: isEnabled
                                         ? Colors.white
                                         : Colors.white54,
-                                    fontSize: 13,
+                                    fontSize: AppSizes.size13,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -198,7 +210,12 @@ class EventCard extends StatelessWidget {
           ),
         ),
 
-        if (statusTag != null) Positioned(top: 0, right: 0, child: statusTag!),
+        if (statusTag != null)
+          Positioned(
+            top: AppSizes.size0,
+            right: AppSizes.size0,
+            child: statusTag!,
+          ),
       ],
     );
   }

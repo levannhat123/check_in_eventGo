@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Brand
+  static const brandPrimary = Color(0xFF4257B4);
+  static const brandAccent = Color(0xFFF49415);
+
+  // Home/check-in theme
+  static const homeBackground = Color(0xFF0B1221);
+  static const cardBackground = Color(0xFF161D2F);
+  static const cardMutedBackground = Color(0xFF252E45);
+  static const cardAccentBackground = Color(0xFF2A344B);
+  static const checkInGradientStart = Color(0xFF00E5C0);
+  static const checkInGradientEnd = Color(0xFF00B0A5);
+  static const checkInGlow = Color(0xFF00C4B4);
+  static const checkInDisabledStart = Color(0xFF4B5563);
+  static const checkInDisabledEnd = Color(0xFF374151);
+
   static const textPrimary = Color.fromARGB(255, 255, 255, 255);
   static const textSecondary = Color.fromRGBO(247, 166, 0, 1);
   static const textTertiary = Color.fromARGB(50, 255, 255, 255);
@@ -76,9 +91,8 @@ class AppColors {
   static const pending = Color.fromARGB(255, 3, 86, 46);
   static const transferredOut = Color.fromARGB(255, 99, 4, 4);
   static const green_36 = Color.fromRGBO(36, 179, 110, 0.1);
-  static const  lightPeach= Color(0xFF0085c3);
+  static const lightPeach = Color(0xFF0085c3);
   static const Color yellow = Colors.yellow;
   static const lightGray = Color(0xFFD9D9D9);
   static const neutralGray = Color(0xFF7E7E7E);
-
 }

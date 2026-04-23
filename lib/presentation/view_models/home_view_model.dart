@@ -4,75 +4,79 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/base/base_view_model.dart';
-
-enum CaptchaResult { success, fail, lockedOut }
+import '../../core/constants/app_storage_key.dart';
+import '../../core/constants/app_strings.dart';
 
 class HomeViewModel extends BaseViewModel {
-  HomeViewModel() {}
-
+  HomeViewModel();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   Future<String> processCheckIn(String orderId, String currentEventId) async {
-    final ticketRef = _db.collection('tickets').doc(orderId);
-
+    final ticketRef = _db
+        .collection(AppStorageKey.ticketsCollection)
+        .doc(orderId);
     try {
       return await _db.runTransaction((transaction) async {
         final ticketDoc = await transaction.get(ticketRef);
 
         if (!ticketDoc.exists) {
-          return "LỖI: Vé không hợp lệ hoặc không tồn tại.";
+          return AppStrings.invalidOrMissingTicketError;
         }
-
-
 
         final data = ticketDoc.data();
         if (data == null) {
-          return "LỖI: Không thể đọc dữ liệu vé.";
+          return AppStrings.ticketReadError;
         }
-        if (data['eventId'] != currentEventId) {
-          return "LỖI: Vé này KHÔNG thuộc sự kiện đang check-in!";
+        if (data[AppStorageKey.eventId] != currentEventId) {
+          return AppStrings.wrongEventTicketError;
         }
-        if (data['paymentStatus'] != 'completed') {
-          return "LỖI: Vé này chưa hoàn tất thanh toán.";
+        if (data[AppStorageKey.paymentStatus] !=
+            AppStorageKey.statusCompleted) {
+          return AppStrings.unpaidTicketError;
         }
-        // 🔒 CHƯA TỚI GIỜ HOẶC ĐÃ KẾT THÚC
-        final Timestamp? startTs = data['startTime'];
-        final Timestamp? endTs = data['endTime'];
+        final Timestamp? startTs = data[AppStorageKey.startTime];
+        final Timestamp? endTs = data[AppStorageKey.endTime];
 
         if (startTs != null && endTs != null) {
           final now = DateTime.now();
 
           if (now.isBefore(startTs.toDate())) {
-            return "Sự kiện chưa bắt đầu.";
+            return AppStrings.eventNotStartedError;
           }
 
           if (now.isAfter(endTs.toDate())) {
-            return "Sự kiện đã kết thúc.";
+            return AppStrings.eventEndedError;
           }
         }
 
-        final checkinStatus = data['checkinStatus'];
-        if (checkinStatus == 'completed') {
-          final timestamp = data['checkinTimestamp'] as Timestamp?;
+        final checkinStatus = data[AppStorageKey.checkInStatus];
+        if (checkinStatus == AppStorageKey.statusCompleted) {
+          final timestamp = data[AppStorageKey.checkInTimestamp] as Timestamp?;
           final timeStr = timestamp != null
               ? DateFormat('HH:mm dd/MM/yyyy').format(timestamp.toDate())
-              : 'không rõ';
-          return "LỖI: Vé này đã được check-in lúc $timeStr.";
+              : AppStrings.unknownTime;
+          return AppStrings.alreadyCheckedInAt.replaceFirst('{time}', timeStr);
         }
         transaction.update(ticketRef, {
-          'checkinStatus': 'completed',
-          'checkinTimestamp': FieldValue.serverTimestamp(),
+          AppStorageKey.checkInStatus: AppStorageKey.statusCompleted,
+          AppStorageKey.checkInTimestamp: FieldValue.serverTimestamp(),
         });
 
-        final email = data['userEmail'] ?? 'Khách';
-        return "THÀNH CÔNG: Check-in cho [$email] thành công!";
+        final email = data[AppStorageKey.userEmail] ?? AppStrings.guestLabel;
+        return AppStrings.checkInSuccessWithEmail.replaceFirst(
+          '{email}',
+          '$email',
+        );
       });
     } catch (e) {
-      return "LỖI HỆ THỐNG: Vui lòng thử lại sau.";
+      return AppStrings.checkInSystemError;
     }
   }
 
   Future<Map<String, dynamic>?> getTicket(String orderId) async {
-    final snap = await _db.collection('tickets').doc(orderId).get();
+    final snap = await _db
+        .collection(AppStorageKey.ticketsCollection)
+        .doc(orderId)
+        .get();
     return snap.data();
   }
 
@@ -85,46 +89,46 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<String> checkInQuantity(String orderId, int count) async {
-    final ref = _db.collection('tickets').doc(orderId);
+    final ref = _db.collection(AppStorageKey.ticketsCollection).doc(orderId);
 
     try {
       return await _db.runTransaction((transaction) async {
         final snap = await transaction.get(ref);
 
-        if (!snap.exists) return "Lỗi: Vé không tồn tại.";
+        if (!snap.exists) return AppStrings.ticketNotFoundError;
 
         final data = snap.data()!;
-        final List items = data['tickets'] ?? [];
+        final List items = data[AppStorageKey.tickets] ?? [];
         int totalQuantity = 0;
         for (var t in items) {
-          totalQuantity += parseQuantity(t['quantity'] ?? 1);
+          totalQuantity += parseQuantity(t[AppStorageKey.quantity] ?? 1);
         }
 
-        final int checkedIn = data['checkedIn'] ?? 0;
+        final int checkedIn = data[AppStorageKey.checkedIn] ?? 0;
         final int remaining = totalQuantity - checkedIn;
 
         if (remaining <= 0) {
-          return "Vé đã được sử dụng hết.";
+          return AppStrings.ticketExhaustedError;
         }
 
         if (count > remaining) {
-          return "Không thể check-in vượt quá số còn lại.";
+          return AppStrings.checkInExceedRemainingError;
         }
 
         final newCheckedIn = checkedIn + count;
 
         transaction.update(ref, {
-          "checkedIn": newCheckedIn,
-          "checkinTimestamp": FieldValue.serverTimestamp(),
-          "checkinStatus": newCheckedIn == totalQuantity
-              ? "completed"
-              : "partial",
+          AppStorageKey.checkedIn: newCheckedIn,
+          AppStorageKey.checkInTimestamp: FieldValue.serverTimestamp(),
+          AppStorageKey.checkInStatus: newCheckedIn == totalQuantity
+              ? AppStorageKey.statusCompleted
+              : AppStorageKey.statusPartial,
         });
 
-        return "Check-in thành công $count người!";
+        return AppStrings.checkInCountSuccess.replaceFirst('{count}', '$count');
       });
     } catch (e) {
-      return "Lỗi check-in: $e";
+      return AppStrings.checkInErrorWithDetails.replaceFirst('{error}', '$e');
     }
   }
 }

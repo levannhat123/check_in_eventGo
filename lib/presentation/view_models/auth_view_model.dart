@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/base/base_view_model.dart';
+import '../../core/constants/app_storage_key.dart';
 import '../../core/constants/app_strings.dart';
 import '../../data/models/profile_model.dart';
 import '../../data/repositories/auth/auth_repository.dart';
@@ -47,6 +48,7 @@ class AuthViewModel extends BaseViewModel {
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _authRepository.isLoggedIn;
   bool get isLoading => _isLoading;
+  @override
   String? get errorMessage => _errorMessage;
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
@@ -101,13 +103,14 @@ class AuthViewModel extends BaseViewModel {
         if (session.expiresAt != null && session.expiresAt! > now) {
           try {
             final profile = await Supabase.instance.client
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
+                .from(AppStorageKey.profilesTable)
+                .select(AppStorageKey.role)
+                .eq(AppStorageKey.id, session.user.id)
                 .maybeSingle();
 
-            print('User profile: $profile');
-            if (profile != null && profile['role'] != 'admin') {
+            debugPrint('User profile: $profile');
+            if (profile != null &&
+                profile[AppStorageKey.role] != AppStorageKey.roleAdmin) {
               _currentUser = session.user;
               await _saveLoginState(true);
             } else {
@@ -131,33 +134,32 @@ class AuthViewModel extends BaseViewModel {
     } catch (e) {
       _isInitialized = true;
       _setLoading(false);
-      print('Error checking auth state: $e');
+      debugPrint('Error checking auth state: $e');
     }
   }
 
   Future<void> _saveLoginState(bool isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', isLoggedIn);
+    await prefs.setBool(AppStorageKey.isLoggedIn, isLoggedIn);
   }
 
   Future<bool> isFirstLaunch() async {
     final prefs = await SharedPreferences.getInstance();
-    final isFirst = prefs.getBool('isFirstLaunch') ?? true;
+    final isFirst = prefs.getBool(AppStorageKey.isFirstLaunch) ?? true;
     if (isFirst) {
-      await prefs.setBool('isFirstLaunch', false);
+      await prefs.setBool(AppStorageKey.isFirstLaunch, false);
     }
     return isFirst;
   }
 
   Future<void> _createUserProfile(User user) async {
-    await Supabase.instance.client.from('profiles').insert({
-      'id': user.id,
-      'role': 'user',
-      'email': user.email,
+    await Supabase.instance.client.from(AppStorageKey.profilesTable).insert({
+      AppStorageKey.id: user.id,
+      AppStorageKey.role: AppStorageKey.roleUser,
+      AppStorageKey.email: user.email,
     });
   }
 
-  @override
   Future<bool> login(String email, String password) async {
     try {
       _setLoading(true);
@@ -167,9 +169,9 @@ class AuthViewModel extends BaseViewModel {
 
       if (result.isSuccess && result.user != null) {
         final profile = await Supabase.instance.client
-            .from('profiles')
-            .select('role')
-            .eq('id', result.user!.id)
+            .from(AppStorageKey.profilesTable)
+            .select(AppStorageKey.role)
+            .eq(AppStorageKey.id, result.user!.id)
             .maybeSingle();
 
         if (profile == null) {
@@ -177,7 +179,8 @@ class AuthViewModel extends BaseViewModel {
         }
 
         if (profile == null ||
-            profile['role'] != 'admin' && profile['role'] != 'user') {
+            profile[AppStorageKey.role] != AppStorageKey.roleAdmin &&
+                profile[AppStorageKey.role] != AppStorageKey.roleUser) {
           _currentUser = result.user;
           await _saveLoginState(true);
           _setLoading(false);
@@ -236,6 +239,7 @@ class AuthViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  @override
   void clearError() {
     _clearError();
   }
@@ -264,7 +268,7 @@ class AuthViewModel extends BaseViewModel {
         notifyListeners();
       }
     } catch (e) {
-      print("Lỗi chọn ảnh: $e");
+      debugPrint("Lỗi chọn ảnh: $e");
     }
   }
 
@@ -274,11 +278,11 @@ class AuthViewModel extends BaseViewModel {
       _setLoading(true);
 
       if (_imageFile != null) {
-        print('Đang upload ảnh mới...');
+        debugPrint('Đang upload ảnh mới...');
         final file = _imageFile!;
         final fileName = 'public/${user.id}.jpg';
         await Supabase.instance.client.storage
-            .from('avatars_profile')
+            .from(AppStorageKey.avatarsProfileBucket)
             .upload(
               fileName,
               file, // File local
@@ -288,31 +292,30 @@ class AuthViewModel extends BaseViewModel {
               ),
             );
         final tempUrl = Supabase.instance.client.storage
-            .from('avatars_profile')
+            .from(AppStorageKey.avatarsProfileBucket)
             .getPublicUrl(fileName);
 
-        finalAvatarUrl =
-            tempUrl + '?t=' + DateTime.now().millisecondsSinceEpoch.toString();
+        finalAvatarUrl = '$tempUrl?t=${DateTime.now().millisecondsSinceEpoch}';
 
-        print('Upload thành công: $finalAvatarUrl');
+        debugPrint('Upload thành công: $finalAvatarUrl');
       }
 
       final profileToSave = user.copyWith(avatarUrl: finalAvatarUrl);
-      await Supabase.instance.client.from('profiles').upsert({
-        'id': profileToSave.id,
-        'email': profileToSave.email,
-        'full_name': profileToSave.fullName,
-        'avatar_url': profileToSave.avatarUrl,
-        'phone': profileToSave.phone,
+      await Supabase.instance.client.from(AppStorageKey.profilesTable).upsert({
+        AppStorageKey.id: profileToSave.id,
+        AppStorageKey.email: profileToSave.email,
+        AppStorageKey.fullName: profileToSave.fullName,
+        AppStorageKey.avatarUrl: profileToSave.avatarUrl,
+        AppStorageKey.phone: profileToSave.phone,
       });
 
       _userProfile = profileToSave;
       _networkAvatarUrl = profileToSave.avatarUrl;
-      print('✅ Upserted profile for user: ${user.email}');
+      debugPrint('Upserted profile for user: ${user.email}');
       notifyListeners();
     } catch (e) {
       _setLoading(false);
-      print('❌ Error upserting profile: $e');
+      debugPrint('Error upserting profile: $e');
     }
   }
 
@@ -357,14 +360,14 @@ class AuthViewModel extends BaseViewModel {
 
     try {
       final profileData = await Supabase.instance.client
-          .from('profiles')
+          .from(AppStorageKey.profilesTable)
           .select()
-          .eq('id', user.id)
+          .eq(AppStorageKey.id, user.id)
           .single();
       _userProfile = ProfileModel.fromJson(profileData);
-      print('✅ Profile đã được TẢI LẠI: ${_userProfile?.fullName}');
+      debugPrint('Profile refreshed: ${_userProfile?.fullName}');
     } catch (e) {
-      print("❌ Lỗi khi tải profile: $e");
+      debugPrint("Error fetching profile: $e");
       _userProfile = null;
     }
   }

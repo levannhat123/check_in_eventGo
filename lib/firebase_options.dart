@@ -63,8 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '885411879826',
     projectId: 'event-go-c36f9',
     storageBucket: 'event-go-c36f9.firebasestorage.app',
-    androidClientId: '885411879826-d4sb88ahnig8t298h3oi4gqcpb380tdj.apps.googleusercontent.com',
-    iosClientId: '885411879826-nngku4614gh1n66udplslgg90kg4qugn.apps.googleusercontent.com',
+    androidClientId:
+        '885411879826-d4sb88ahnig8t298h3oi4gqcpb380tdj.apps.googleusercontent.com',
+    iosClientId:
+        '885411879826-nngku4614gh1n66udplslgg90kg4qugn.apps.googleusercontent.com',
     iosBundleId: 'com.example.checkInQr',
   );
 }

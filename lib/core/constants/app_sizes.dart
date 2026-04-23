@@ -29,6 +29,7 @@ class AppSizes {
   static const double size10 = 10.0;
   static const double size11 = 11.0;
   static const double size12 = 12.0;
+  static const double size12_6 = 12.6;
   static const double size13 = 13.0;
   static const double size14 = 14.0;
   static const double size15 = 15.0;
@@ -47,6 +48,7 @@ class AppSizes {
   static const double size36 = 36.0;
   static const double size28 = 28.0;
   static const double size48 = 48.0;
+  static const double size48_6 = 48.6;
   static const double size50 = 50.0;
   static const double size55 = 55.0;
   static const double size56 = 56.0;
@@ -75,6 +77,7 @@ class AppSizes {
   static const double size120 = 120.0;
   static const double size140 = 140.0;
   static const double size100 = 100.0;
+  static const double size110 = 110.0;
   static const double size150 = 150.0;
   static const double size156 = 156.0;
   static const double size184 = 184.0;

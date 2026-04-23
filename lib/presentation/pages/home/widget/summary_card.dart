@@ -1,15 +1,19 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_strings.dart';
 
 class SummaryCard extends StatelessWidget {
   final int soldTickets;
   final int totalTickets;
 
   const SummaryCard({
-    Key? key,
+    super.key,
     required this.soldTickets,
     required this.totalTickets,
-  }) : super(key: key);
+  });
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -26,11 +30,11 @@ class SummaryCard extends StatelessWidget {
     final int percentage = (progress * 100).toInt();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.space20),
       decoration: BoxDecoration(
-        color: const Color(0xFF161D2F),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppSizes.size20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -39,13 +43,13 @@ class SummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Số lượng vé đã bán',
+                AppStrings.soldTicketSummaryTitle,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
-                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: AppSizes.size14,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.space8),
               RichText(
                 text: TextSpan(
                   children: [
@@ -53,15 +57,16 @@ class SummaryCard extends StatelessWidget {
                       text: _formatNumber(soldTickets),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 32,
+                        fontSize: AppSizes.size32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     TextSpan(
-                      text: ' / ${_formatNumber(totalTickets)} vé',
+                      text:
+                          ' / ${_formatNumber(totalTickets)} ${AppStrings.ticketUnit}',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: AppSizes.size14,
                       ),
                     ),
                   ],
@@ -70,19 +75,19 @@ class SummaryCard extends StatelessWidget {
             ],
           ),
           SizedBox(
-            width: 80,
-            height: 80,
+            width: AppSizes.size80,
+            height: AppSizes.size80,
             child: Stack(
               children: [
                 SizedBox(
-                  width: 80,
-                  height: 80,
+                  width: AppSizes.size80,
+                  height: AppSizes.size80,
                   child: CircularProgressIndicator(
                     value: progress,
-                    strokeWidth: 8,
-                    backgroundColor: const Color(0xFF252E45),
+                    strokeWidth: AppSizes.size8,
+                    backgroundColor: AppColors.cardMutedBackground,
                     valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF00C4B4),
+                      AppColors.checkInGlow,
                     ),
                   ),
                 ),
@@ -93,16 +98,16 @@ class SummaryCard extends StatelessWidget {
                       Text(
                         '$percentage%',
                         style: const TextStyle(
-                          color: Color(0xFF00C4B4),
-                          fontSize: 16,
+                          color: AppColors.checkInGlow,
+                          fontSize: AppSizes.size16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'Đã bán',
+                        AppStrings.soldLabel,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 10,
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: AppSizes.size10,
                         ),
                       ),
                     ],

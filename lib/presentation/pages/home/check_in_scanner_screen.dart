@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+
+import '../../../core/constants/app_storage_key.dart';
 import '../../../core/base/base_view.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection.dart';
@@ -7,8 +9,7 @@ import '../../view_models/home_view_model.dart';
 
 class CheckInScannerScreen extends StatefulWidget {
   final String eventId;
-  const CheckInScannerScreen({Key? key, required this.eventId})
-    : super(key: key);
+  const CheckInScannerScreen({super.key, required this.eventId});
 
   @override
   State<CheckInScannerScreen> createState() => _CheckInScannerScreenState();
@@ -77,7 +78,7 @@ class _CheckInScannerScreenState extends State<CheckInScannerScreen> {
               ),
               if (_scanResult != null)
                 Container(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   alignment: Alignment.center,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -124,24 +125,25 @@ class _CheckInScannerScreenState extends State<CheckInScannerScreen> {
     String orderId,
   ) async {
     final ticket = await viewModel.getTicket(orderId);
+    if (!context.mounted) return;
 
     if (ticket == null) {
       _showSnack(context, "Lỗi: Vé không tồn tại.");
       return _resetScanner();
     }
 
-    if (ticket['eventId'] != widget.eventId) {
+    if (ticket[AppStorageKey.eventId] != widget.eventId) {
       _showSnack(context, "Vé này KHÔNG thuộc sự kiện đang check-in!");
       return _resetScanner();
     }
 
-    final List items = ticket['tickets'];
+    final List items = ticket[AppStorageKey.tickets];
     int totalQuantity = 0;
     for (var t in items) {
-      totalQuantity += parseQuantity(t['quantity'] ?? 1);
+      totalQuantity += parseQuantity(t[AppStorageKey.quantity] ?? 1);
     }
 
-    final int checkedIn = ticket['checkedIn'] ?? 0;
+    final int checkedIn = ticket[AppStorageKey.checkedIn] ?? 0;
     final int remaining = totalQuantity - checkedIn;
 
     if (remaining <= 0) {
@@ -151,6 +153,7 @@ class _CheckInScannerScreenState extends State<CheckInScannerScreen> {
 
     if (totalQuantity < 2) {
       final msg = await viewModel.checkInQuantity(orderId, 1);
+      if (!context.mounted) return;
       _showSnack(context, msg);
       return _resetScanner();
     }
@@ -190,6 +193,7 @@ class _CheckInScannerScreenState extends State<CheckInScannerScreen> {
               Navigator.pop(context);
 
               final msg = await viewModel.checkInQuantity(orderId, input);
+              if (!context.mounted) return;
               _showSnack(context, msg);
               _resetScanner();
             },

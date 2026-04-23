@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+import '../constants/app_sizes.dart';
+import '../constants/app_spacing.dart';
+
 class CustomDialog extends StatelessWidget {
   final String title;
   final String message;
@@ -9,20 +13,20 @@ class CustomDialog extends StatelessWidget {
   final VoidCallback onPressed;
 
   const CustomDialog({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
     required this.buttonText,
     required this.icon,
     required this.iconColor,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppSizes.size20),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -30,9 +34,14 @@ class CustomDialog extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.space20,
+              AppSpacing.space60,
+              AppSpacing.space20,
+              AppSpacing.space20,
+            ),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppSizes.size20),
               color: Colors.white,
             ),
             child: Column(
@@ -42,30 +51,30 @@ class CustomDialog extends StatelessWidget {
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: AppSizes.size16,
                     color: Colors.black,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.space10),
                 Text(
                   message,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: AppSizes.size14,
                     color: Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.space20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFf49415),
+                    backgroundColor: AppColors.brandAccent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppSizes.size10),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 12,
+                      horizontal: AppSpacing.space40,
+                      vertical: AppSpacing.space12,
                     ),
                   ),
                   onPressed: onPressed,
@@ -78,27 +87,23 @@ class CustomDialog extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: -40,
+            top: -AppSpacing.space40,
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: AppSizes.size10,
+                    spreadRadius: AppSizes.size2,
+                    offset: const Offset(AppSizes.size0, AppSizes.size5),
                   ),
                 ],
               ),
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                radius: 30,
-                child: Icon(
-                  icon,
-                  size: 40,
-                  color: iconColor,
-                ),
+                radius: AppSizes.size30,
+                child: Icon(icon, size: AppSizes.size40, color: iconColor),
               ),
             ),
           ),
@@ -107,6 +112,7 @@ class CustomDialog extends StatelessWidget {
     );
   }
 }
+
 Future<void> showCustomDialog({
   required BuildContext context,
   required String title,

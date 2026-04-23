@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_storage_key.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../data/models/event_detail_model.dart';
 import '../../../routers/router_name.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   int parseQuantity(dynamic q) {
     if (q == null) return 0;
@@ -41,8 +44,9 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildEventStatusTag(EventDetailModel event) {
-    if (event.startTime == null || event.endTime == null)
+    if (event.startTime == null || event.endTime == null) {
       return const SizedBox();
+    }
 
     final now = DateTime.now();
     String text;
@@ -50,17 +54,17 @@ class HomeScreen extends StatelessWidget {
     Color bgColor;
 
     if (now.isBefore(event.startTime!)) {
-      text = "Sắp diễn ra";
+      text = AppStrings.upcomingStatus;
       color = Colors.orange;
-      bgColor = Colors.orange.withOpacity(0.1);
+      bgColor = Colors.orange.withValues(alpha: 0.1);
     } else if (now.isAfter(event.endTime!)) {
-      text = "Đã kết thúc";
+      text = AppStrings.endedStatus;
       color = Colors.grey;
-      bgColor = Colors.grey.withOpacity(0.1);
+      bgColor = Colors.grey.withValues(alpha: 0.1);
     } else {
-      text = "Đang diễn ra";
-      color = Colors.green;
-      bgColor = Colors.green.withOpacity(0.1);
+      text = AppStrings.happeningStatus;
+      color = AppColors.success;
+      bgColor = AppColors.success.withValues(alpha: 0.1);
     }
 
     return Container(
@@ -68,7 +72,7 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         text,
@@ -84,12 +88,12 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1221),
+      backgroundColor: AppColors.homeBackground,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0B1221),
+        backgroundColor: AppColors.homeBackground,
         elevation: 0,
         title: const Text(
-          'Check-in Sự Kiện',
+          AppStrings.checkInScreenTitle,
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -102,7 +106,14 @@ class HomeScreen extends StatelessWidget {
         stream: FirebaseFirestore.instance.collection('events').snapshots(),
         builder: (context, eventSnapshot) {
           if (eventSnapshot.hasError) {
-            return Center(child: Text('Lỗi: ${eventSnapshot.error}'));
+            return Center(
+              child: Text(
+                AppStrings.eventLoadError.replaceFirst(
+                  '{error}',
+                  '${eventSnapshot.error}',
+                ),
+              ),
+            );
           }
           if (eventSnapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -111,23 +122,38 @@ class HomeScreen extends StatelessWidget {
           final eventDocs = eventSnapshot.data?.docs ?? [];
           return StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
-                .collectionGroup('orders')
-                .where('paymentStatus', isEqualTo: 'completed')
-                .orderBy('createdAt')
+                .collectionGroup(AppStorageKey.ordersCollection)
+                .where(
+                  AppStorageKey.paymentStatus,
+                  isEqualTo: AppStorageKey.statusCompleted,
+                )
+                .orderBy(AppStorageKey.createdAt)
                 .snapshots(),
             builder: (context, orderSnapshot) {
               if (orderSnapshot.hasError) {
-                return Center(child: Text('Lỗi Order: ${orderSnapshot.error}'));
+                return Center(
+                  child: Text(
+                    AppStrings.orderLoadError.replaceFirst(
+                      '{error}',
+                      '${orderSnapshot.error}',
+                    ),
+                  ),
+                );
               }
               final orderDocs = orderSnapshot.data?.docs ?? [];
               return StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
-                    .collection('tickets')
+                    .collection(AppStorageKey.ticketsCollection)
                     .snapshots(),
                 builder: (context, ticketSnapshot) {
                   if (ticketSnapshot.hasError) {
                     return Center(
-                      child: Text('Lỗi Ticket: ${ticketSnapshot.error}'),
+                      child: Text(
+                        AppStrings.ticketLoadError.replaceFirst(
+                          '{error}',
+                          '${ticketSnapshot.error}',
+                        ),
+                      ),
                     );
                   }
 
@@ -146,10 +172,12 @@ class HomeScreen extends StatelessWidget {
                   int globalSold = 0;
                   for (var doc in orderDocs) {
                     final data = doc.data() as Map<String, dynamic>;
-                    if (!activeEventIds.contains(data['eventId'])) continue;
-                    final List tickets = data['tickets'] ?? [];
+                    if (!activeEventIds.contains(data[AppStorageKey.eventId])) {
+                      continue;
+                    }
+                    final List tickets = data[AppStorageKey.tickets] ?? [];
                     for (var t in tickets) {
-                      globalSold += parseQuantity(t['quantity']);
+                      globalSold += parseQuantity(t[AppStorageKey.quantity]);
                     }
                   }
 
@@ -169,14 +197,15 @@ class HomeScreen extends StatelessWidget {
                     int eventSold = 0;
                     final relevantOrders = orderDocs.where((orderDoc) {
                       final orderData = orderDoc.data() as Map<String, dynamic>;
-                      return orderData['eventId'] == event.id;
+                      return orderData[AppStorageKey.eventId] == event.id;
                     });
 
                     for (var orderDoc in relevantOrders) {
                       final orderData = orderDoc.data() as Map<String, dynamic>;
-                      final List tickets = orderData['tickets'] ?? [];
+                      final List tickets =
+                          orderData[AppStorageKey.tickets] ?? [];
                       for (var t in tickets) {
-                        eventSold += parseQuantity(t['quantity']);
+                        eventSold += parseQuantity(t[AppStorageKey.quantity]);
                       }
                     }
 
@@ -184,9 +213,9 @@ class HomeScreen extends StatelessWidget {
                     for (var ticketDoc in ticketDocs) {
                       final ticketData =
                           ticketDoc.data() as Map<String, dynamic>;
-                      if (ticketData['eventId'] == event.id) {
+                      if (ticketData[AppStorageKey.eventId] == event.id) {
                         eventCheckedIn += parseQuantity(
-                          ticketData['checkedIn'],
+                          ticketData[AppStorageKey.checkedIn],
                         );
                       }
                     }
@@ -200,7 +229,7 @@ class HomeScreen extends StatelessWidget {
                       'event': event,
                       'sold': displaySold,
                       'total': eventTotal,
-                      'checkedIn': eventCheckedIn,
+                      AppStorageKey.checkedIn: eventCheckedIn,
                       'realSold': eventSold,
                     });
                   }
@@ -231,10 +260,12 @@ class HomeScreen extends StatelessWidget {
 
                         ...eventListDisplay.map((item) {
                           final event = item['event'] as EventDetailModel;
-                          final checkedIn = item['checkedIn'] as int;
+                          final checkedIn =
+                              item[AppStorageKey.checkedIn] as int;
                           final realSold = item['realSold'] as int;
                           final bool isTimeValid = canCheckIn(event);
-                          final bool isNotFull = realSold > 0 && checkedIn < realSold;
+                          final bool isNotFull =
+                              realSold > 0 && checkedIn < realSold;
                           final bool isEnabled = isTimeValid && isNotFull;
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
@@ -247,17 +278,15 @@ class HomeScreen extends StatelessWidget {
                                   ? DateFormat(
                                       'dd/MM/yyyy HH:mm',
                                     ).format(event.startTime!)
-                                  : "Chưa có ngày",
+                                  : AppStrings.noDate,
                               rating: "$checkedIn/$realSold",
 
                               onTap: () {
                                 if (!canCheckIn(event)) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text(
-                                        "Sự kiện chưa diễn ra",
-                                      ),
-                                      backgroundColor: Colors.redAccent,
+                                      content: Text(AppStrings.eventNotStarted),
+                                      backgroundColor: AppColors.error,
                                     ),
                                   );
                                   return;
@@ -270,7 +299,7 @@ class HomeScreen extends StatelessWidget {
                               },
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   );
@@ -290,32 +319,32 @@ Widget buildEventStatusTag(EventDetailModel event) {
   Color color = Colors.grey;
   switch (statusEN.toUpperCase()) {
     case 'ACTIVE':
-      textVN = "Đang diễn ra";
-      color = const Color(0xFF00E5C0);
+      textVN = AppStrings.happeningStatus;
+      color = AppColors.checkInGradientStart;
       break;
 
     case 'INACTIVE':
-      textVN = "Sắp diễn ra";
-      color = const Color(0xFFF59E0B);
+      textVN = AppStrings.upcomingStatus;
+      color = AppColors.warning;
       break;
 
     case 'COMPLETED':
-      textVN = "Đã kết thúc";
-      color = const Color(0xFFEF4444);
+      textVN = AppStrings.endedStatus;
+      color = AppColors.error;
       break;
 
     case 'CANCELLED':
-      textVN = "Đã hủy";
-      color = Colors.red;
+      textVN = AppStrings.cancelled;
+      color = AppColors.error;
       break;
 
     default:
       final now = DateTime.now();
       if (event.startTime != null && now.isBefore(event.startTime!)) {
-        textVN = "Sắp diễn ra";
+        textVN = AppStrings.upcomingStatus;
         color = Colors.orange;
       } else if (event.endTime != null && now.isAfter(event.endTime!)) {
-        textVN = "Đã kết thúc";
+        textVN = AppStrings.endedStatus;
         color = Colors.grey;
       } else {
         textVN = statusEN;
