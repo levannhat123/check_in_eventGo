@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_sizes.dart';
+
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
@@ -21,7 +23,9 @@ class AppTextField extends StatelessWidget {
     this.errorColor,
     this.suffixIcon,
     this.lableText,
-    this.onTap, this.textColor=Colors.black, this.onChanged,
+    this.onTap,
+    this.textColor = Colors.black,
+    this.onChanged,
   });
 
   final TextEditingController? controller;
@@ -33,7 +37,7 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final Function(String)? onFieldSubmitted;
   final VoidCallback? onTap;
-   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onChanged;
   final TextInputAction? textInputAction;
   final FormFieldValidator<String>? validator;
   final bool readOnly;
@@ -50,27 +54,27 @@ class AppTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     OutlineInputBorder outlineInputBorder(Color color) => OutlineInputBorder(
-      borderSide: BorderSide(color: color, width: 1.2),
-      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+      borderSide: BorderSide(color: color, width: AppSizes.size1_2),
+      borderRadius: const BorderRadius.all(Radius.circular(AppSizes.size10)),
     );
 
     return Stack(
       children: [
         Container(
-          height: 48.6,
+          height: AppSizes.size48_6,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.0),
+            borderRadius: BorderRadius.circular(AppSizes.size16),
             boxShadow: [
               BoxShadow(
-                color: shadowColor ?? Colors.grey.withOpacity(0.3),
-                offset: const Offset(0.0, 3.0),
-                blurRadius: 6.0,
+                color: shadowColor ?? Colors.grey.withValues(alpha: 0.3),
+                offset: const Offset(AppSizes.size0, AppSizes.size3),
+                blurRadius: AppSizes.size6,
               ),
             ],
           ),
         ),
         TextFormField(
-          style: TextStyle(color: textColor, fontSize: 16),
+          style: TextStyle(color: textColor, fontSize: AppSizes.size16),
           onChanged: onChanged,
           controller: controller,
           focusNode: focusNode,
@@ -83,8 +87,8 @@ class AppTextField extends StatelessWidget {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 12.6,
+              horizontal: AppSizes.size16,
+              vertical: AppSizes.size12_6,
             ),
             filled: true,
             fillColor: fillColor ?? Colors.pink.shade50,

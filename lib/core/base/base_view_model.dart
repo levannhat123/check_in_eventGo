@@ -3,7 +3,8 @@ import 'package:flutter/cupertino.dart';
 class BaseViewModel extends ChangeNotifier {
   bool _isBusy = false;
   String? _errorMessage;
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   BuildContext? get context => navigatorKey.currentContext;
 

@@ -16,9 +16,6 @@ class RouterPath {
   static const String payment = '/payment';
   static const String profile = '/profile';
   static const String check_in = '/check_in';
-
-
-
 }
 
 class RouterName {

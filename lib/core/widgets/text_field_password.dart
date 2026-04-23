@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_sizes.dart';
+
 class AppTextFieldPassword extends StatefulWidget {
   const AppTextFieldPassword({
     super.key,
@@ -52,29 +54,27 @@ class _AppTextFieldPasswordState extends State<AppTextFieldPassword> {
   @override
   Widget build(BuildContext context) {
     OutlineInputBorder outlineInputBorder(Color color) => OutlineInputBorder(
-          borderSide: BorderSide(color: color, width: 1.2),
-          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-        );
+      borderSide: BorderSide(color: color, width: AppSizes.size1_2),
+      borderRadius: const BorderRadius.all(Radius.circular(AppSizes.size10)),
+    );
 
     return Stack(
       children: [
         Container(
-          height: 48.6,
+          height: AppSizes.size48_6,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(AppSizes.size10),
             boxShadow: [
               BoxShadow(
-                color: widget.shadowColor ?? Colors.grey.withOpacity(0.3),
-                offset: const Offset(0.0, 3.0),
-                blurRadius: 6.0,
+                color: widget.shadowColor ?? Colors.grey.withValues(alpha: 0.3),
+                offset: const Offset(AppSizes.size0, AppSizes.size3),
+                blurRadius: AppSizes.size6,
               ),
             ],
           ),
         ),
         TextFormField(
-          style: TextStyle(
-            color: Colors.black,
-          ),
+          style: TextStyle(color: Colors.black),
           controller: widget.controller,
           onChanged: widget.onChanged,
           obscureText: !showPassword,
@@ -85,15 +85,19 @@ class _AppTextFieldPasswordState extends State<AppTextFieldPassword> {
           validator: widget.validator,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.6),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.size16,
+              vertical: AppSizes.size12_6,
+            ),
             filled: true,
             fillColor: widget.fillColor ?? Colors.pink.shade50,
             border: outlineInputBorder(widget.borderColor ?? Colors.red),
-            focusedBorder:
-                outlineInputBorder(widget.focusedBorderColor ?? Colors.blue),
-            enabledBorder:
-                outlineInputBorder(widget.enabledBorderColor ?? Colors.orange),
+            focusedBorder: outlineInputBorder(
+              widget.focusedBorderColor ?? Colors.blue,
+            ),
+            enabledBorder: outlineInputBorder(
+              widget.enabledBorderColor ?? Colors.orange,
+            ),
             hintText: widget.hintText,
             hintStyle: TextStyle(color: widget.hintTextColor ?? Colors.grey),
             labelText: widget.hintText,

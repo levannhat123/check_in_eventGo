@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 
 typedef ViewModelBuilder<T> =
-Widget Function(BuildContext context, T viewModel, Widget? child);
+    Widget Function(BuildContext context, T viewModel, Widget? child);
 
 class BaseView<T extends ChangeNotifier> extends StatefulWidget {
   final T Function() viewModelBuilder;
@@ -16,14 +16,14 @@ class BaseView<T extends ChangeNotifier> extends StatefulWidget {
   final bool useSelector;
 
   const BaseView({
-    Key? key,
+    super.key,
     required this.viewModelBuilder,
     required this.builder,
     this.onModelReady,
     this.autoDispose = true,
     this.padding = true,
     this.useSelector = false,
-  }) : super(key: key);
+  });
 
   @override
   State<BaseView<T>> createState() => _BaseViewState<T>();
@@ -65,11 +65,11 @@ class _BaseViewState<T extends ChangeNotifier> extends State<BaseView<T>> {
             : EdgeInsets.zero,
         child: widget.useSelector
             ? Builder(
-          builder: (context) {
-            final vm = Provider.of<T>(context, listen: false);
-            return widget.builder(context, vm, null);
-          },
-        )
+                builder: (context) {
+                  final vm = Provider.of<T>(context, listen: false);
+                  return widget.builder(context, vm, null);
+                },
+              )
             : Consumer<T>(builder: widget.builder),
       );
     }

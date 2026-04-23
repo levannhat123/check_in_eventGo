@@ -95,7 +95,7 @@ class NotMatchValidator extends TextFieldValidator {
   final String? password;
 
   NotMatchValidator(this.password, {required String errorText})
-      : super(errorText);
+    : super(errorText);
 
   @override
   bool isValid(String? value) {
